@@ -1,23 +1,23 @@
-# api-provider-ellipse
+# api-provider-express
 
-API provider for building api-core base APIs consumable 
-via HTTP using the Ellipse framework.
+API provider for building api-core based APIs consumable 
+via HTTP using the Express framework.
 
 ## Installation
 
 ```
-npm install api-provider-ellipse
+npm install api-provider-express
 ```
 
 ## Usage
 ```javascript
-const Ellipse = require('ellipse'),
-      EllipseApiRouter  = require('api-provider-ellipse').EllipseApiRouter;
+const express = require('express'),
+      ExpressApiRouter  = require('api-provider-express').ExpressApiRouter;
 
 const API = new Api(...);
 
-const app = new Ellipse(),
-      router = new EllipseApiRouter(API);
+const app = express(),
+      router = new ExpressApiRouter(API);
       
 router.apply(app);
 app.listen(8080);

@@ -1,0 +1,23 @@
+{
+  "name": "api-provider-express",
+  "version": "0.0.1",
+  "description": "API provider for building api-core based APIs consumable via HTTP using the Express framework.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ajuhos/api-provider-express.git"
+  },
+  "keywords": [
+    "api-core",
+    "express"
+  ],
+  "author": "We Are Break <ajuhos@we-are-break.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ajuhos/api-provider-express/issues"
+  },
+  "homepage": "https://github.com/ajuhos/api-provider-express#readme"
+}
