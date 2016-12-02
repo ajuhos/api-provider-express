@@ -24,7 +24,7 @@ export class ExpressApiRouter {
     }
 
     apply = (app: express.Router) => {
-        app.use('/v:version/*', (req: ExtendedRequest, res: express.Response, next: express.NextFunction) => {
+        app.all('/v:version/*', (req: ExtendedRequest, res: express.Response, next: express.NextFunction) => {
             let index = this.apiVersions.indexOf(req.params.version);
             if(index == -1) {
                 req.error = new ApiEdgeError(400, "Unsupported API version");
@@ -37,7 +37,7 @@ export class ExpressApiRouter {
             }
         });
 
-        app.use('/*', (req: ExtendedRequest, res: express.Response, next: express.NextFunction) => {
+        app.all('/*', (req: ExtendedRequest, res: express.Response, next: express.NextFunction) => {
             if(!req.api) {
                 req.api = this.defaultApi;
                 req.apiPath = req.path.replace('/', '');

@@ -4,7 +4,7 @@ const ApiQueryStringParser_1 = require("./ApiQueryStringParser");
 class ExpressApiRouter {
     constructor(apis) {
         this.apply = (app) => {
-            app.use('/v:version/*', (req, res, next) => {
+            app.all('/v:version/*', (req, res, next) => {
                 let index = this.apiVersions.indexOf(req.params.version);
                 if (index == -1) {
                     req.error = new api_core_1.ApiEdgeError(400, "Unsupported API version");
@@ -16,7 +16,7 @@ class ExpressApiRouter {
                     next();
                 }
             });
-            app.use('/*', (req, res, next) => {
+            app.all('/*', (req, res, next) => {
                 if (!req.api) {
                     req.api = this.defaultApi;
                     req.apiPath = req.path.replace('/', '');
