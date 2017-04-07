@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const api_core_1 = require("api-core");
 const ApiQueryStringParser_1 = require("./ApiQueryStringParser");
 class ExpressApiRouter {

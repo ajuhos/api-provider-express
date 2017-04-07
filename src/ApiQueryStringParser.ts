@@ -1,4 +1,7 @@
-import {ApiEdgeQueryContext, ApiRequestPath, ApiEdgeError, OneToOneRelation, ApiEdgeQueryFilterType} from "api-core";
+import {
+    ApiEdgeDefinition, ApiEdgeQueryContext, ApiRequestPath, ApiEdgeError,
+    OneToOneRelation, ApiEdgeQueryFilterType
+} from "api-core";
 
 function extractWhereClauseParts(key: string): string[] {
     let parts: string[] = [];
@@ -18,6 +21,45 @@ function extractWhereClauseParts(key: string): string[] {
     }
 
     return parts
+}
+
+function processWhereClause(clause: any, context: ApiEdgeQueryContext, edge: ApiEdgeDefinition) {
+    const clauseEntries = Object.keys(clause);
+    if(!clauseEntries.length) throw new ApiEdgeError(400, `Invalid Where Clause`);
+
+    clauseEntries.forEach((key) => {
+        if (edge.schema.fields.indexOf(key) == -1) {
+            throw new ApiEdgeError(400, `Invalid Field: ${key}`);
+        }
+
+        const operator = Object.keys(clause[key])[0];
+        if(!operator) throw new ApiEdgeError(400, `Invalid Where Clause`);
+
+        const value = clause[key][operator];
+
+        switch (operator) {
+            case 'eq':
+                context.filter(key, ApiEdgeQueryFilterType.Equals, value);
+                break;
+            case 'ne':
+                context.filter(key, ApiEdgeQueryFilterType.NotEquals, value);
+                break;
+            case 'gt':
+                context.filter(key, ApiEdgeQueryFilterType.GreaterThan, value);
+                break;
+            case 'gte':
+                context.filter(key, ApiEdgeQueryFilterType.GreaterThanOrEquals, value);
+                break;
+            case 'lt':
+                context.filter(key, ApiEdgeQueryFilterType.LowerThan, value);
+                break;
+            case 'lte':
+                context.filter(key, ApiEdgeQueryFilterType.LowerThanOrEquals, value);
+                break;
+            default:
+                throw new ApiEdgeError(400, `Invalid Filter Operator: ${operator}`);
+        }
+    })
 }
 
 export class ApiQueryStringParser {
@@ -93,45 +135,50 @@ export class ApiQueryStringParser {
                 if(key.substring(0, 5) == "where") {
                     key = key.substring(5);
 
-                    const parts = extractWhereClauseParts(key);
-                    if(parts.length == 1) {
-                        key = parts[0];
+                    if(key) {
+                        const parts = extractWhereClauseParts(key);
+                        if (parts.length == 1) {
+                            key = parts[0];
 
-                        if(edge.schema.fields.indexOf(key) == -1) {
-                            throw new ApiEdgeError(400, `Invalid Field: ${key}`);
+                            if (edge.schema.fields.indexOf(key) == -1) {
+                                throw new ApiEdgeError(400, `Invalid Field: ${key}`);
+                            }
+
+                            context.filter(key, ApiEdgeQueryFilterType.Equals, value)
                         }
+                        else if (parts.length == 2) {
+                            key = parts[1];
 
-                        context.filter(key, ApiEdgeQueryFilterType.Equals, value)
+                            if (edge.schema.fields.indexOf(key) == -1) {
+                                throw new ApiEdgeError(400, `Invalid Field: ${key}`);
+                            }
+
+                            switch (parts[0]) {
+                                case 'eq':
+                                    context.filter(key, ApiEdgeQueryFilterType.Equals, value);
+                                    break;
+                                case 'ne':
+                                    context.filter(key, ApiEdgeQueryFilterType.NotEquals, value);
+                                    break;
+                                case 'gt':
+                                    context.filter(key, ApiEdgeQueryFilterType.GreaterThan, value);
+                                    break;
+                                case 'gte':
+                                    context.filter(key, ApiEdgeQueryFilterType.GreaterThanOrEquals, value);
+                                    break;
+                                case 'lt':
+                                    context.filter(key, ApiEdgeQueryFilterType.LowerThan, value);
+                                    break;
+                                case 'lte':
+                                    context.filter(key, ApiEdgeQueryFilterType.LowerThanOrEquals, value);
+                                    break;
+                                default:
+                                    throw new ApiEdgeError(400, `Invalid Filter Operator: ${parts[0]}`);
+                            }
+                        }
                     }
-                    else if(parts.length == 2) {
-                        key = parts[1];
-
-                        if(edge.schema.fields.indexOf(key) == -1) {
-                            throw new ApiEdgeError(400, `Invalid Field: ${key}`);
-                        }
-
-                        switch(parts[0]) {
-                            case 'eq':
-                                context.filter(key, ApiEdgeQueryFilterType.Equals, value);
-                                break;
-                            case 'ne':
-                                context.filter(key, ApiEdgeQueryFilterType.NotEquals, value);
-                                break;
-                            case 'gt':
-                                context.filter(key, ApiEdgeQueryFilterType.GreaterThan, value);
-                                break;
-                            case 'gte':
-                                context.filter(key, ApiEdgeQueryFilterType.GreaterThanOrEquals, value);
-                                break;
-                            case 'lt':
-                                context.filter(key, ApiEdgeQueryFilterType.LowerThan, value);
-                                break;
-                            case 'lte':
-                                context.filter(key, ApiEdgeQueryFilterType.LowerThanOrEquals, value);
-                                break;
-                            default:
-                                throw new ApiEdgeError(400, `Invalid Filter Operator: ${parts[0]}`);
-                        }
+                    else {
+                        processWhereClause(value, context, edge)
                     }
                 }
                 else {
