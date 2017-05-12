@@ -56,6 +56,9 @@ function processWhereClause(clause: any, context: ApiEdgeQueryContext, edge: Api
             case 'lte':
                 context.filter(key, ApiEdgeQueryFilterType.LowerThanOrEquals, value);
                 break;
+            case 'like':
+                context.filter(key, ApiEdgeQueryFilterType.Similar, value);
+                break;
             default:
                 throw new ApiEdgeError(400, `Invalid Filter Operator: ${operator}`);
         }
@@ -96,7 +99,7 @@ export class ApiQueryStringParser {
                     throw new ApiEdgeError(400, `Invalid Related Field: ${field}`);
                 }
 
-                context.populate(edge.relations[relationId].relationId)
+                context.populate(edge.relations[relationId])
             })
         }
 

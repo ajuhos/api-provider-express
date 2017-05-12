@@ -47,6 +47,9 @@ function processWhereClause(clause, context, edge) {
             case 'lte':
                 context.filter(key, api_core_1.ApiEdgeQueryFilterType.LowerThanOrEquals, value);
                 break;
+            case 'like':
+                context.filter(key, api_core_1.ApiEdgeQueryFilterType.Similar, value);
+                break;
             default:
                 throw new api_core_1.ApiEdgeError(400, `Invalid Filter Operator: ${operator}`);
         }
@@ -73,7 +76,7 @@ class ApiQueryStringParser {
                 if (relationId == -1) {
                     throw new api_core_1.ApiEdgeError(400, `Invalid Related Field: ${field}`);
                 }
-                context.populate(edge.relations[relationId].relationId);
+                context.populate(edge.relations[relationId]);
             });
         }
         if (query.sort) {
