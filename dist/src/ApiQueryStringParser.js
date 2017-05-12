@@ -61,7 +61,7 @@ class ApiQueryStringParser {
         if (!lastSegment) {
             throw new api_core_1.ApiEdgeError(400, "Invalid Query Parameters");
         }
-        const edge = lastSegment.edge, oneToOneRelations = edge.relations.filter(r => r instanceof api_core_1.OneToOneRelation).map(r => r.name);
+        const edge = lastSegment.edge, oneToOneRelations = edge.relations.filter(r => r instanceof api_core_1.OneToOneRelation), oneToOneRelationNames = oneToOneRelations.map(r => r.name);
         if (query.fields) {
             query.fields.split(',').forEach((field) => {
                 if (edge.schema.fields.indexOf(field) == -1) {
@@ -72,11 +72,11 @@ class ApiQueryStringParser {
         }
         if (query.embed) {
             query.embed.split(',').forEach((field) => {
-                const relationId = oneToOneRelations.indexOf(field);
+                const relationId = oneToOneRelationNames.indexOf(field);
                 if (relationId == -1) {
                     throw new api_core_1.ApiEdgeError(400, `Invalid Related Field: ${field}`);
                 }
-                context.populate(edge.relations[relationId]);
+                context.populate(oneToOneRelations[relationId]);
             });
         }
         if (query.sort) {

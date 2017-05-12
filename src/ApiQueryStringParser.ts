@@ -79,7 +79,8 @@ export class ApiQueryStringParser {
         }
 
         const edge = lastSegment.edge,
-            oneToOneRelations = edge.relations.filter(r => r instanceof OneToOneRelation).map(r => r.name);
+            oneToOneRelations = edge.relations.filter(r => r instanceof OneToOneRelation),
+                oneToOneRelationNames = oneToOneRelations.map(r => r.name);
 
         if (query.fields) {
             query.fields.split(',').forEach((field: string) => {
@@ -93,13 +94,13 @@ export class ApiQueryStringParser {
 
         if (query.embed) {
             query.embed.split(',').forEach((field: string) => {
-                const relationId = oneToOneRelations.indexOf(field);
+                const relationId = oneToOneRelationNames.indexOf(field);
 
                 if(relationId == -1) {
                     throw new ApiEdgeError(400, `Invalid Related Field: ${field}`);
                 }
 
-                context.populate(edge.relations[relationId])
+                context.populate(oneToOneRelations[relationId])
             })
         }
 
