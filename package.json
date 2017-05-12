@@ -1,6 +1,6 @@
 {
   "name": "api-provider-express",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "API provider for building api-core based APIs consumable via HTTP using the Express framework.",
   "main": "dist/index.js",
   "scripts": {
