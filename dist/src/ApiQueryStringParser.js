@@ -50,6 +50,9 @@ function processWhereClause(clause, context, edge) {
             case 'like':
                 context.filter(key, api_core_1.ApiEdgeQueryFilterType.Similar, value);
                 break;
+            case 'in':
+                context.filter(key, api_core_1.ApiEdgeQueryFilterType.In, value.split(','));
+                break;
             default:
                 throw new api_core_1.ApiEdgeError(400, `Invalid Filter Operator: ${operator}`);
         }

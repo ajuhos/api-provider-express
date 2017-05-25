@@ -1,6 +1,6 @@
 {
   "name": "api-provider-express",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "API provider for building api-core based APIs consumable via HTTP using the Express framework.",
   "main": "dist/index.js",
   "scripts": {
@@ -22,7 +22,7 @@
   "homepage": "https://github.com/ajuhos/api-provider-express#readme",
   "dependencies": {
     "@types/express": "^4.0.34",
-    "api-core": "^0.6.0",
+    "api-core": "^0.6.25",
     "express": "^4.14.0"
   }
 }
