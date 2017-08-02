@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const api_core_1 = require("api-core");
 function extractWhereClauseParts(key) {
     let parts = [];
@@ -64,7 +63,7 @@ class ApiQueryStringParser {
         if (!lastSegment) {
             throw new api_core_1.ApiEdgeError(400, "Invalid Query Parameters");
         }
-        const edge = lastSegment.edge, oneToOneRelations = edge.relations.filter(r => r instanceof api_core_1.OneToOneRelation), oneToOneRelationNames = oneToOneRelations.map(r => r.name);
+        const edge = lastSegment.edge, relationNames = edge.relations.map(r => r.name);
         if (query.fields) {
             query.fields.split(',').forEach((field) => {
                 if (edge.schema.fields.indexOf(field) == -1) {
@@ -75,11 +74,11 @@ class ApiQueryStringParser {
         }
         if (query.embed) {
             query.embed.split(',').forEach((field) => {
-                const relationId = oneToOneRelationNames.indexOf(field);
+                const relationId = relationNames.indexOf(field);
                 if (relationId == -1) {
                     throw new api_core_1.ApiEdgeError(400, `Invalid Related Field: ${field}`);
                 }
-                context.populate(oneToOneRelations[relationId]);
+                context.populate(edge.relations[relationId]);
             });
         }
         if (query.sort) {

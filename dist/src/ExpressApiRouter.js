@@ -2,9 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const api_core_1 = require("api-core");
 const ApiQueryStringParser_1 = require("./ApiQueryStringParser");
+const stream = require('stream'), destroy = require('destroy'), onFinished = require('on-finished');
 class ExpressApiRouter {
     constructor(apis) {
         this.apply = (app) => {
+            app.use(require('skipper')());
             app.all('/v:version/*', (req, res, next) => {
                 let index = this.apiVersions.indexOf(req.params.version);
                 if (index == -1) {
@@ -38,6 +40,12 @@ class ExpressApiRouter {
                         if (req.body) {
                             request.body = req.body;
                         }
+                        if (req.method !== "GET" && req.method !== "OPTIONS" && req.method === "HEAD") {
+                            const stream = req.file('file');
+                            if (!stream.isNoop) {
+                                request.stream = stream;
+                            }
+                        }
                         switch (req.method) {
                             case "GET":
                                 request.type = api_core_1.ApiRequestType.Read;
@@ -64,8 +72,29 @@ class ExpressApiRouter {
                                     const total = resp.metadata.pagination.total || 0, limit = +req.query.limit || ApiQueryStringParser_1.ApiQueryStringParser.defaultLimit;
                                     res.setHeader('X-Total-Count', req.query.page ? Math.ceil(total / limit) : total);
                                 }
+                                if (resp.metadata.contentType) {
+                                    res.setHeader('Content-Type', resp.metadata.contentType);
+                                }
+                                if (resp.metadata.headers) {
+                                    const headerNames = Object.keys(resp.metadata.headers);
+                                    for (let header of headerNames) {
+                                        res.setHeader(header, resp.metadata.headers[header]);
+                                    }
+                                }
                             }
-                            res.json(resp.data);
+                            if (resp instanceof api_core_1.ApiEdgeQueryStreamResponse) {
+                                onFinished(res, () => destroy(res));
+                                resp.stream.on('error', (err) => {
+                                    if (res.finished || res.headersSent)
+                                        return;
+                                    console.error(err.stack);
+                                    res.status(500).send('Unable to read to provided stream.');
+                                });
+                                resp.stream.pipe(res);
+                            }
+                            else {
+                                res.json(resp.data);
+                            }
                         })
                             .catch((e) => {
                             req.error = e;
