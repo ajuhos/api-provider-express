@@ -87,9 +87,9 @@ export class ApiQueryStringParser {
 
         if (query.fields) {
             query.fields.split(',').forEach((field: string) => {
-                if(edge.schema.fields.indexOf(field) == -1) {
+              /*  if(edge.schema.fields.indexOf(field) == -1) {
                     throw new ApiEdgeError(400, `Invalid Field: ${field}`);
-                }
+                }*/
 
                 context.field(field)
             })
@@ -189,11 +189,9 @@ export class ApiQueryStringParser {
                     }
                 }
                 else {
-                    if(edge.schema.fields.indexOf(key) == -1) {
-                        throw new ApiEdgeError(400, `Invalid Field: ${key}`);
+                    if(edge.schema.fields.indexOf(key) !== -1) {
+                        context.filter(key, ApiEdgeQueryFilterType.Equals, value)
                     }
-
-                    context.filter(key, ApiEdgeQueryFilterType.Equals, value)
                 }
             }
         });
