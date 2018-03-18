@@ -1,4 +1,7 @@
-import {ApiEdgeError, ApiEdgeQueryResponse, ApiEdgeQueryStreamResponse, Api, ApiRequestType} from "api-core";
+import {
+    ApiEdgeError, ApiEdgeQueryResponse, ApiEdgeQueryStreamResponse, Api, ApiRequestType,
+    ApiEdgeQueryContext
+} from "api-core";
 import {ApiQueryStringParser} from "./ApiQueryStringParser";
 import * as express from "express";
 
@@ -6,8 +9,9 @@ const stream = require('stream'),
     destroy = require('destroy'),
     onFinished = require('on-finished');
 
-interface Upstream extends NodeJS.WritableStream {
+interface Upstream extends NodeJS.ReadableStream {
     isNoop: boolean;
+    fatalIncomingError: () => void;
 }
 
 interface ExtendedRequest extends express.Request {
@@ -57,6 +61,29 @@ export class ExpressApiRouter {
             next()
         });
 
+        app.get('/.api-core', async (req: ExtendedRequest, res) => {
+            const url = req.api.url || '';
+            const metadata = req.api.metadata() as any;
+            metadata.url = url;
+            metadata.edges.forEach((edge: any) => edge.url = `${metadata.url}/${edge.pluralName}`);
+            res.json(metadata)
+        });
+
+        app.get('/.api-core/edges/:edge', async (req: ExtendedRequest, res) => {
+            const edgeName = req.params.edge;
+            const edge = req.api.edges.find(e => e.name === edgeName || e.pluralName === edgeName);
+            if(!edge) {
+                res.status(404).send("Not Found");
+                return
+            }
+
+            const metadata = edge.metadata() as any;
+            const url = req.api.url || '';
+            metadata.url = `${url}/${edge.pluralName}`;
+
+            res.json(metadata)
+        });
+
         app.use((req: ExtendedRequest, res: express.Response, next: express.NextFunction) => {
             if(req.error || !req.api) next();
             else {
@@ -68,16 +95,25 @@ export class ExpressApiRouter {
                         return next()
                     }
 
-                    request.context = ApiQueryStringParser.parse(req.query, request.path);
+                    if(req.query['.context']) {
+                        request.context = ApiEdgeQueryContext.fromJSON(JSON.parse(req.query['.context']), req.api)
+                    }
+                    else {
+                        request.context = ApiQueryStringParser.parse(req.query, request.path)
+                    }
 
                     if (req.body) {
                         request.body = req.body;
                     }
 
-                    if(req.method !== "GET" && req.method !== "OPTIONS" && req.method === "HEAD") {
+                    if(req.method !== "GET" && req.method !== "OPTIONS" && req.method !== "HEAD") {
                         const stream = req.file('file');
                         if(!stream.isNoop) {
                             request.stream = stream;
+                        }
+                        else {
+                            //HACK: Skipper would throw error on timeout.
+                            stream.fatalIncomingError = () => {};
                         }
                     }
 
