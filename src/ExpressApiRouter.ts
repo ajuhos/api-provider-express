@@ -7,7 +7,8 @@ import * as express from "express";
 
 const stream = require('stream'),
     destroy = require('destroy'),
-    onFinished = require('on-finished');
+    onFinished = require('on-finished'),
+    pkg = require('../../package.json');
 
 interface Upstream extends NodeJS.ReadableStream {
     isNoop: boolean;
@@ -65,7 +66,11 @@ export class ExpressApiRouter {
             const url = req.api.url || '';
             const metadata = req.api.metadata() as any;
             metadata.url = url;
-            metadata.edges.forEach((edge: any) => edge.url = `${metadata.url}/${edge.pluralName}`);
+            metadata.provider = 'api-provider-express@' + pkg.version;
+            metadata.edges.forEach((edge: any) => {
+                edge.url = `${metadata.url}/${edge.pluralName}`;
+                edge.provider = metadata.provider
+            });
             res.json(metadata)
         });
 
@@ -80,6 +85,7 @@ export class ExpressApiRouter {
             const metadata = edge.metadata() as any;
             const url = req.api.url || '';
             metadata.url = `${url}/${edge.pluralName}`;
+            metadata.provider = 'api-provider-express@' + pkg.version;
 
             res.json(metadata)
         });
