@@ -8,7 +8,8 @@ import * as express from "express";
 const stream = require('stream'),
     destroy = require('destroy'),
     onFinished = require('on-finished'),
-    pkg = require('../../package.json');
+    pkg = require('../../package.json'),
+    debug = require('debug')('api-provider-express');
 
 interface Upstream extends NodeJS.ReadableStream {
     isNoop: boolean;
@@ -37,7 +38,7 @@ export class ExpressApiRouter {
         this.apiVersions = apis.map(api => api.version);
     }
 
-    apply = (app: express.Router) => {
+    applyPublic = (app: express.Router) => {
         app.use(require('skipper')());
 
         app.all('/v:version/*', (req: ExtendedRequest, res: express.Response, next: express.NextFunction) => {
@@ -89,7 +90,9 @@ export class ExpressApiRouter {
 
             res.json(metadata)
         });
+    };
 
+    applyPrivate = (app: express.Router) => {
         app.use((req: ExtendedRequest, res: express.Response, next: express.NextFunction) => {
             if(req.error || !req.api) next();
             else {
@@ -143,6 +146,7 @@ export class ExpressApiRouter {
 
                     let query = req.api.buildQuery(request);
                     query.request = request;
+                    debug(`[${query.id}]`, 'request to', request.path);
 
                     //TODO: req.user - Is this an acceptable solution?
                     query.execute(req.user)
@@ -186,11 +190,13 @@ export class ExpressApiRouter {
                         })
                         .catch((e: any) => {
                             req.error = e;
+                            debug(`[${query.id}]`, 'query error:', e);
                             next()
                         })
                 }
                 catch (e) {
                     req.error = e;
+                    debug('unknown error:', e);
                     next()
                 }
             }
@@ -205,5 +211,10 @@ export class ExpressApiRouter {
                 res.status(500).send("Internal Server Error")
             }
         });
-    }
+    };
+
+    apply = (app: express.Router) => {
+        this.applyPublic(app);
+        this.applyPrivate(app);
+    };
 }

@@ -1,5 +1,27 @@
-import {ExternalApiProvider,ApiEdgeQueryContext,ApiEdgeQueryResponse,ApiEdgeError} from "api-core";
+import {
+    ExternalApiProvider,
+    ApiEdgeQueryContext,
+    ApiEdgeQueryResponse,
+    ApiEdgeError,
+    ApiQueryScope,
+    ApiRequestType
+} from "api-core";
 const request = require('request-promise-native');
+
+function requestTypeToVerb(type: ApiRequestType) {
+    switch(type) {
+        case ApiRequestType.Read:
+            return 'GET';
+        case ApiRequestType.Create:
+            return 'POST';
+        case ApiRequestType.Update:
+            return 'PUT';
+        case ApiRequestType.Patch:
+            return 'PATCH';
+        case ApiRequestType.Delete:
+            return 'DELETE';
+    }
+}
 
 export class ExpressExternalProvider extends ExternalApiProvider {
     constructor(metadata: any = null) {
@@ -74,6 +96,19 @@ export class ExpressExternalProvider extends ExternalApiProvider {
         });
         return new ApiEdgeQueryResponse(response)
     };
+
+
+    callMethod = async (scope: ApiQueryScope): Promise<ApiEdgeQueryResponse> => {
+        const response = await request({
+            uri: this.url,
+            method: requestTypeToVerb(scope.request.type),
+            body: scope.body,
+            json: true,
+            qs: { '.context': JSON.stringify(scope.context.toJSON()) }
+        });
+        return new ApiEdgeQueryResponse(response)
+    };
+
 
     exists = async (context: ApiEdgeQueryContext): Promise<ApiEdgeQueryResponse> => {
         throw new ApiEdgeError(500,'Not Supported')

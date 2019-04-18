@@ -1,6 +1,6 @@
 import {
     ApiEdgeDefinition, ApiEdgeQueryContext, ApiRequestPath, ApiEdgeError,
-    OneToOneRelation, ApiEdgeQueryFilterType
+    OneToOneRelation, ApiEdgeQueryFilterType, MethodPathSegment
 } from "api-core";
 
 function extractWhereClauseParts(key: string): string[] {
@@ -189,7 +189,10 @@ export class ApiQueryStringParser {
                     }
                 }
                 else {
-                    if(edge.schema.fields.indexOf(key) !== -1) {
+                    if(lastSegment instanceof MethodPathSegment && lastSegment.method.parameters.indexOf(key) !== -1) {
+                        context.parameter(key, value)
+                    }
+                    else if(edge.schema.fields.indexOf(key) !== -1) {
                         context.filter(key, ApiEdgeQueryFilterType.Equals, value)
                     }
                 }
