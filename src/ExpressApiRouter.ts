@@ -93,11 +93,11 @@ export class ExpressApiRouter {
     };
 
     applyPrivate = (app: express.Router) => {
-        app.use((req: ExtendedRequest, res: express.Response, next: express.NextFunction) => {
+        app.use(async (req: ExtendedRequest, res: express.Response, next: express.NextFunction) => {
             if(req.error || !req.api) next();
             else {
                 try {
-                    let request = req.api.parseRequest(req.apiPath.split('/'));
+                    let request = await req.api.parseRequest(req.apiPath.split('/'));
 
                     if(!request.path.segments.length) {
                         req.error = new ApiEdgeError(404, 'Not Found');
@@ -105,7 +105,7 @@ export class ExpressApiRouter {
                     }
 
                     if(req.query['.context']) {
-                        request.context = ApiEdgeQueryContext.fromJSON(JSON.parse(req.query['.context']), req.api)
+                        request.context = await ApiEdgeQueryContext.fromJSON(JSON.parse(req.query['.context']), req.api)
                     }
                     else {
                         request.context = ApiQueryStringParser.parse(req.query, request.path)
