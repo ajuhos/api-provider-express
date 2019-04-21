@@ -108,7 +108,7 @@ export class ExpressApiRouter {
                         request.context = await ApiEdgeQueryContext.fromJSON(JSON.parse(req.query['.context']), req.api)
                     }
                     else {
-                        request.context = ApiQueryStringParser.parse(req.query, request.path)
+                        request.context = await ApiQueryStringParser.parse(req.query, request.path)
                     }
 
                     if (req.body) {
@@ -149,6 +149,7 @@ export class ExpressApiRouter {
                     debug(`[${query.id}]`, 'request to', request.path);
 
                     //TODO: req.user - Is this an acceptable solution?
+                    request.context.identity = req.user;
                     query.execute(req.user)
                         .then((resp: ApiEdgeQueryResponse) => {
                             if(resp.metadata) {

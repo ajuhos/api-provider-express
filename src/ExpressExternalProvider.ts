@@ -31,82 +31,140 @@ export class ExpressExternalProvider extends ExternalApiProvider {
     url: string;
     private metadataUrl: string;
 
+    static identityToQueryString: (identity: any) => any = (identity) => ({ identity: JSON.stringify(identity) });
+
     getEntry = async (context: ApiEdgeQueryContext): Promise<ApiEdgeQueryResponse> => {
-        const response = await request({
-            uri: `${this.url}/${context.id}`,
-            qs: { '.context': JSON.stringify(context.toJSON()) },
-            json: true
-        });
-        return new ApiEdgeQueryResponse(response)
+        try {
+            const response = await request({
+                uri: `${this.url}/${context.id}`,
+                qs: {
+                    '.context': JSON.stringify(context.toJSON()),
+                    ...ExpressExternalProvider.identityToQueryString(context.identity)
+                },
+                json: true
+            });
+            return new ApiEdgeQueryResponse(response)
+        }
+        catch({ response }) {
+            throw new ApiEdgeError(response.statusCode, response.statusMessage)
+        }
     };
 
     listEntries = async (context: ApiEdgeQueryContext): Promise<ApiEdgeQueryResponse> => {
-        const response = await request({
-            uri: this.url,
-            qs: { '.context': JSON.stringify(context.toJSON()) },
-            json: true
-        });
-        return new ApiEdgeQueryResponse(response)
+        try {
+            const response = await request({
+                uri: this.url,
+                qs: {
+                    '.context': JSON.stringify(context.toJSON()),
+                    ...ExpressExternalProvider.identityToQueryString(context.identity)
+                },
+                json: true
+            });
+            return new ApiEdgeQueryResponse(response)
+        }
+        catch({ response }) {
+            throw new ApiEdgeError(response.statusCode, response.statusMessage)
+        }
     };
 
     createEntry = async (context: ApiEdgeQueryContext, body: any): Promise<ApiEdgeQueryResponse> => {
-        body.id = body.id || context.id;
-        const response = await request({
-            uri: this.url,
-            method: 'POST',
-            qs: { '.context': JSON.stringify(context.toJSON()) },
-            body,
-            json: true
-        });
-        return new ApiEdgeQueryResponse(response)
+        try {
+            body.id = body.id || context.id;
+            const response = await request({
+                uri: this.url,
+                method: 'POST',
+                qs: {
+                    '.context': JSON.stringify(context.toJSON()),
+                    ...ExpressExternalProvider.identityToQueryString(context.identity)
+                },
+                body,
+                json: true
+            });
+            return new ApiEdgeQueryResponse(response)
+        }
+        catch({ response }) {
+            throw new ApiEdgeError(response.statusCode, response.statusMessage)
+        }
     };
 
     updateEntry = async (context: ApiEdgeQueryContext, body: any): Promise<ApiEdgeQueryResponse> => {
-        body.id = body.id || context.id;
-        const response = await request({
-            uri: this.url,
-            method: 'PUT',
-            body,
-            json: true,
-            qs: { '.context': JSON.stringify(context.toJSON()) }
-        });
-        return new ApiEdgeQueryResponse(response)
+        try {
+            body.id = body.id || context.id;
+            const response = await request({
+                uri: this.url,
+                method: 'PUT',
+                body,
+                json: true,
+                qs: {
+                    '.context': JSON.stringify(context.toJSON()),
+                    ...ExpressExternalProvider.identityToQueryString(context.identity)
+                }
+            });
+            return new ApiEdgeQueryResponse(response)
+        }
+        catch({ response }) {
+            throw new ApiEdgeError(response.statusCode, response.statusMessage)
+        }
     };
 
     patchEntry = async (context: ApiEdgeQueryContext, body: any): Promise<ApiEdgeQueryResponse> => {
-        body.id = body.id || context.id;
-        const response = await request({
-            uri: this.url,
-            method: 'PATCH',
-            body,
-            json: true,
-            qs: { '.context': JSON.stringify(context.toJSON()) }
-        });
-        return new ApiEdgeQueryResponse(response)
+        try {
+            body.id = body.id || context.id;
+            const response = await request({
+                uri: this.url,
+                method: 'PATCH',
+                body,
+                json: true,
+                qs: {
+                    '.context': JSON.stringify(context.toJSON()),
+                    ...ExpressExternalProvider.identityToQueryString(context.identity)
+                }
+            });
+            return new ApiEdgeQueryResponse(response)
+        }
+        catch({ response }) {
+            throw new ApiEdgeError(response.statusCode, response.statusMessage)
+        }
     };
 
     removeEntry = async (context: ApiEdgeQueryContext, body: any): Promise<ApiEdgeQueryResponse> => {
-        body.id = body.id || context.id;
-        const response = await request({
-            uri: this.url,
-            method: 'DELETE',
-            body,
-            json: true,
-            qs: { '.context': JSON.stringify(context.toJSON()) }
-        });
-        return new ApiEdgeQueryResponse(response)
+        try {
+            body.id = body.id || context.id;
+            const response = await request({
+                uri: this.url,
+                method: 'DELETE',
+                body,
+                json: true,
+                qs: {
+                    '.context': JSON.stringify(context.toJSON()),
+                    ...ExpressExternalProvider.identityToQueryString(context.identity)
+                }
+            });
+            return new ApiEdgeQueryResponse(response)
+        }
+        catch({ response }) {
+            throw new ApiEdgeError(response.statusCode, response.statusMessage)
+        }
     };
 
 
     callMethod = async (scope: ApiQueryScope): Promise<ApiEdgeQueryResponse> => {
-        const response = await request({
-            uri: this.url,
-            method: requestTypeToVerb(scope.request.type),
-            body: scope.body,
-            json: true,
-            qs: { '.context': JSON.stringify(scope.context.toJSON()) }
-        });
-        return new ApiEdgeQueryResponse(response)
+        try {
+            const response = await request({
+                uri: this.url,
+                method: requestTypeToVerb(scope.request.type),
+                body: scope.body,
+                json: true,
+                qs: {
+                    '.context': JSON.stringify(scope.context.toJSON()),
+                    ...ExpressExternalProvider.identityToQueryString(scope.identity)
+                }
+            });
+            return new ApiEdgeQueryResponse(response)
+        }
+        catch({ response }) {
+            throw new ApiEdgeError(response.statusCode, response.statusMessage)
+        }
     };
 
 

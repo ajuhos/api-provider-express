@@ -73,7 +73,7 @@ export class ApiQueryStringParser {
     static defaultLimit: number = 10;
     static excludedKeys = [ "sort", "embed", "fields", "skip", "limit", "page" ];
 
-    static parse(query: any, path: ApiRequestPath): ApiEdgeQueryContext {
+    static async parse(query: any, path: ApiRequestPath): Promise<ApiEdgeQueryContext> {
         let context = new ApiEdgeQueryContext(),
             lastSegment = path.segments[path.segments.length-1];
 
@@ -81,9 +81,7 @@ export class ApiQueryStringParser {
             throw new ApiEdgeError(400, "Invalid Query Parameters");
         }
 
-        const edge = lastSegment.edge,
-            //relations = edge.relations.filter(r => r instanceof OneToOneRelation),
-                relationNames = edge.relations.map(r => r.name);
+        const edge = lastSegment.edge;
 
         if (query.fields) {
             query.fields.split(',').forEach((field: string) => {
@@ -96,15 +94,16 @@ export class ApiQueryStringParser {
         }
 
         if (query.embed) {
-            query.embed.split(',').forEach((field: string) => {
-                const relationId = relationNames.indexOf(field);
+            const embeds = query.embed.split(',');
+            for(let field of embeds) {
+                const relation = await edge.api.findRelationOfEdge(edge, field);
 
-                if(relationId == -1) {
-                    throw new ApiEdgeError(400, `Invalid Related Field: ${field}`);
+                if(!relation) {
+                    throw new ApiEdgeError(400, `Invalid Related Field: ${field}`)
                 }
 
-                context.populate(edge.relations[relationId])
-            })
+                context.populate(relation)
+            }
         }
 
         if(query.sort) {
