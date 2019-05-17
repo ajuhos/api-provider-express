@@ -150,6 +150,7 @@ export class ExpressApiRouter {
 
                     //TODO: req.user - Is this an acceptable solution?
                     request.context.identity = req.user;
+                    request.metadata.headers = req.headers;
                     query.execute(req.user)
                         .then((resp: ApiEdgeQueryResponse) => {
                             if(resp.metadata) {
