@@ -2,6 +2,7 @@ import {
     ApiEdgeError, ApiEdgeQueryResponse, ApiEdgeQueryStreamResponse, Api, ApiRequestType,
     ApiEdgeQueryContext
 } from "api-core";
+
 import {ApiQueryStringParser} from "./ApiQueryStringParser";
 import * as express from "express";
 
@@ -171,7 +172,7 @@ export class ExpressApiRouter {
                                         res.setHeader(header, resp.metadata.headers[header])
                                     }
                                 }
-                                
+
                                 if(resp.metadata.statusCode) {
                                     statusCode = resp.metadata.statusCode;
                                 }
@@ -192,7 +193,6 @@ export class ExpressApiRouter {
                                 resp.stream.pipe(res)
                             }
                             else {
-                                res.json(resp.data)
                                 res.status(statusCode).json(resp.data)
                             }
                         })

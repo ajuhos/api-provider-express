@@ -6,6 +6,7 @@ import {
     ApiQueryScope,
     ApiRequestType
 } from "api-core";
+
 const request = require('request-promise-native');
 
 function requestTypeToVerb(type: ApiRequestType) {
