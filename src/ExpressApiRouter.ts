@@ -153,6 +153,7 @@ export class ExpressApiRouter {
                     request.metadata.headers = req.headers;
                     query.execute(req.user)
                         .then((resp: ApiEdgeQueryResponse) => {
+                            let statusCode = 200;
                             if(resp.metadata) {
                                 if(resp.metadata.pagination) {
                                     const total = resp.metadata.pagination.total || 0,
@@ -169,6 +170,10 @@ export class ExpressApiRouter {
                                     for(let header of headerNames) {
                                         res.setHeader(header, resp.metadata.headers[header])
                                     }
+                                }
+                                
+                                if(resp.metadata.statusCode) {
+                                    statusCode = resp.metadata.statusCode;
                                 }
                             }
 
@@ -188,6 +193,7 @@ export class ExpressApiRouter {
                             }
                             else {
                                 res.json(resp.data)
+                                res.status(statusCode).json(resp.data)
                             }
                         })
                         .catch((e: any) => {
