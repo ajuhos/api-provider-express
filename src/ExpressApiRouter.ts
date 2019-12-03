@@ -42,7 +42,7 @@ export class ExpressApiRouter {
     applyPublic = (app: express.Router) => {
         app.use(require('skipper')());
 
-        app.all('/v:version/*', (req: ExtendedRequest, res: express.Response, next: express.NextFunction) => {
+        app.all('/v:version([0-9]+.[0-9]+)/*', (req: ExtendedRequest, res: express.Response, next: express.NextFunction) => {
             let index = this.apiVersions.indexOf(req.params.version);
             if(index == -1) {
                 req.error = new ApiEdgeError(400, "Unsupported API version");
