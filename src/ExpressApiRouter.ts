@@ -32,8 +32,6 @@ export class ExpressApiRouter {
 
     private apiVersions: string[];
 
-    private MaxLimit = 1000;
-
     constructor(apis: Api[]) {
         this.apis = apis;
         this.defaultApi = apis[0];
@@ -151,8 +149,10 @@ export class ExpressApiRouter {
                     query.request = request;
                     debug(`[${query.id}]`, 'request to', request.path);
 
-                    if (!request.context.pagination || request.context.pagination.limit > this.MaxLimit)
-                        request.context.pagination = {...request.context.pagination, limit: this.MaxLimit};
+                    // Ez nem jo, meg nem lehet altalanosan kijelenteni, pl. asset gallery letolt 3250-et :o
+                    //MaxLimit=1000
+                    //if (!request.context.pagination || request.context.pagination.limit > this.MaxLimit)
+                    //    request.context.pagination = {...request.context.pagination, limit: this.MaxLimit};
 
                     //TODO: req.user - Is this an acceptable solution?
                     request.context.identity = req.user;
