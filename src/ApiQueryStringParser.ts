@@ -94,6 +94,8 @@ export class ApiQueryStringParser {
         }
 
         if (query.embed) {
+            if (Array.isArray(query.embed))
+                query.embed = query.embed.join(',');
             const embeds = query.embed.split(',');
             for(let field of embeds) {
                 const relation = await edge.api.findRelationOfEdge(edge, field);
