@@ -59,9 +59,11 @@ export class ExpressExternalProvider extends ExternalApiProvider {
                     '.context': JSON.stringify(context.toJSON()),
                     ...ExpressExternalProvider.identityToQueryString(context.identity)
                 },
-                json: true
+                json: true,
+                resolveWithFullResponse: true
             });
-            return new ApiEdgeQueryResponse(response)
+            const total = response.headers["x-total-count"];
+            return new ApiEdgeQueryResponse(response.body, total ? { pagination: { total }} : undefined);
         }
         catch({ response }) {
             throw new ApiEdgeError(response.statusCode, response.statusMessage)
