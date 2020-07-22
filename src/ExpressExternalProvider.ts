@@ -4,7 +4,8 @@ import {
     ApiEdgeQueryResponse,
     ApiEdgeError,
     ApiQueryScope,
-    ApiRequestType
+    ApiRequestType,
+    Api
 } from "api-core";
 
 const request = require('request-promise-native');
@@ -25,8 +26,8 @@ function requestTypeToVerb(type: ApiRequestType) {
 }
 
 export class ExpressExternalProvider extends ExternalApiProvider {
-    constructor(metadata: any = null) {
-        super(metadata);
+    constructor(metadata: any = null, api: Api) {
+        super(metadata, api);
     }
 
     url: string;
@@ -183,11 +184,11 @@ export class ExpressExternalProvider extends ExternalApiProvider {
     }
 
     static for(metadata: any) {
-        return new ExpressExternalProvider(metadata)
+        return new ExpressExternalProvider(metadata, null as any as Api) // TODO ha majd hasznaljuk, valahogy kell szerezni egy Api-t
     }
 
     static forURL(url: string) {
-        const provider = new ExpressExternalProvider();
+        const provider = new ExpressExternalProvider(null, null as any as Api); // TODO ha majd hasznaljuk, valahogy kell szerezni egy Api-t
         provider.metadataUrl = url;
         return provider
     }
