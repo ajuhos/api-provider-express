@@ -151,26 +151,27 @@ export class ExpressExternalProvider extends ExternalApiProvider {
         }
     };
 
-
     callMethod = async (scope: ApiQueryScope): Promise<ApiEdgeQueryResponse> => {
         try {
             const response = await request({
-                uri: this.url,
+                uri: `${this.url}/${scope.context.id}/${scope.context.method}`,
                 method: requestTypeToVerb(scope.request.type),
                 body: scope.body,
-                json: true,
+                json: !!scope.body,
                 qs: {
                     '.context': JSON.stringify(scope.context.toJSON()),
                     ...ExpressExternalProvider.identityToQueryString(scope.identity)
-                }
+                },
+                resolveWithFullResponse: true,
+                encoding: null // request binary response body
             });
-            return new ApiEdgeQueryResponse(response)
+            const contentType = response.headers['content-type'];
+            return new ApiEdgeQueryResponse(contentType.lastIndexOf('application/json',0) == 0 ? response.body.toString() : response.body, { contentType })
         }
         catch({ response }) {
             throw new ApiEdgeError(response.statusCode, response.statusMessage)
         }
     };
-
 
     exists = async (context: ApiEdgeQueryContext): Promise<ApiEdgeQueryResponse> => {
         throw new ApiEdgeError(500,'Not Supported')

@@ -198,7 +198,11 @@ export class ExpressApiRouter {
                                 resp.stream.pipe(res)
                             }
                             else {
-                                res.status(statusCode).json(resp.data)
+                                const r = res.status(statusCode);
+                                if (resp.metadata && resp.metadata.contentType && resp.metadata.contentType.lastIndexOf('application/json', 0) != 0)
+                                    r.send(resp.data)
+                                else
+                                    r.json(resp.data)
                             }
                         })
                         .catch((e: any) => {
