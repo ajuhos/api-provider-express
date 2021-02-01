@@ -36,7 +36,7 @@ export class ExpressApiRouter {
         this.apis = apis;
         this.defaultApi = apis[0];
 
-        this.apiVersions = apis.map(api => api.version);
+        this.apiVersions = apis.map(api => api.service.version);
     }
 
     applyPublic = (app: express.Router) => {
@@ -50,7 +50,7 @@ export class ExpressApiRouter {
             }
             else {
                 req.api = this.apis[index];
-                req.apiPath = req.path.replace(`/v${req.api.version}/`, '');
+                req.apiPath = req.path.replace(`/v${req.api.service.version}/`, '');
                 next()
             }
         });
