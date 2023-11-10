@@ -1,6 +1,6 @@
 {
   "name": "api-provider-express",
-  "version": "3.0.0",
+  "version": "3.0.2",
   "description": "API provider for building api-core based APIs consumable via HTTP using the Express framework.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,7 +29,6 @@
     "destroy": "^1.0.4",
     "express": "^4.14.0",
     "on-finished": "^2.3.0",
-    "request-promise-native": "^1.0.5",
     "skipper": "^0.8.2"
   },
   "devDependencies": {
