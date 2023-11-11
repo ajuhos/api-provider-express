@@ -32,42 +32,43 @@ function processWhereClause(clause: any, context: ApiEdgeQueryContext, edge: Api
             throw new ApiEdgeError(400, `Invalid Field: ${key}`);
         }
 
-        const operator = Object.keys(clause[key])[0];
-        if(!operator) throw new ApiEdgeError(400, `Invalid Where Clause`);
+        const operators = Object.keys(clause[key]);
+        if(!operators.length) throw new ApiEdgeError(400, `Invalid Where Clause`);
+        operators.forEach((operator) => {
+            const value = clause[key][operator];
 
-        const value = clause[key][operator];
-
-        switch (operator) {
-            case 'eq':
-                context.filter(key, ApiEdgeQueryFilterType.Equals, value);
-                break;
-            case 'ne':
-                context.filter(key, ApiEdgeQueryFilterType.NotEquals, value);
-                break;
-            case 'gt':
-                context.filter(key, ApiEdgeQueryFilterType.GreaterThan, value);
-                break;
-            case 'gte':
-                context.filter(key, ApiEdgeQueryFilterType.GreaterThanOrEquals, value);
-                break;
-            case 'lt':
-                context.filter(key, ApiEdgeQueryFilterType.LowerThan, value);
-                break;
-            case 'lte':
-                context.filter(key, ApiEdgeQueryFilterType.LowerThanOrEquals, value);
-                break;
-            case 'like':
-                context.filter(key, ApiEdgeQueryFilterType.Similar, value);
-                break;
-            case 'in':
-                context.filter(key, ApiEdgeQueryFilterType.In, value.split(','));
-                break;
-            case 'nin':
-                context.filter(key, ApiEdgeQueryFilterType.NotIn, value.split(','));
-                break;
-            default:
-                throw new ApiEdgeError(400, `Invalid Filter Operator: ${operator}`);
-        }
+            switch (operator) {
+                case 'eq':
+                    context.filter(key, ApiEdgeQueryFilterType.Equals, value);
+                    break;
+                case 'ne':
+                    context.filter(key, ApiEdgeQueryFilterType.NotEquals, value);
+                    break;
+                case 'gt':
+                    context.filter(key, ApiEdgeQueryFilterType.GreaterThan, value);
+                    break;
+                case 'gte':
+                    context.filter(key, ApiEdgeQueryFilterType.GreaterThanOrEquals, value);
+                    break;
+                case 'lt':
+                    context.filter(key, ApiEdgeQueryFilterType.LowerThan, value);
+                    break;
+                case 'lte':
+                    context.filter(key, ApiEdgeQueryFilterType.LowerThanOrEquals, value);
+                    break;
+                case 'like':
+                    context.filter(key, ApiEdgeQueryFilterType.Similar, value);
+                    break;
+                case 'in':
+                    context.filter(key, ApiEdgeQueryFilterType.In, value.split(','));
+                    break;
+                case 'nin':
+                    context.filter(key, ApiEdgeQueryFilterType.NotIn, value.split(','));
+                    break;
+                default:
+                    throw new ApiEdgeError(400, `Invalid Filter Operator: ${operator}`);
+            }
+        })
     })
 }
 
