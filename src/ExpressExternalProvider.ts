@@ -7,8 +7,7 @@ import {
     ApiRequestType,
     Api
 } from "api-core";
-
-const request = require('request-promise-native');
+import {URLSearchParams} from "url";
 
 function requestTypeToVerb(type: ApiRequestType) {
     switch(type) {
@@ -37,14 +36,11 @@ export class ExpressExternalProvider extends ExternalApiProvider {
 
     getEntry = async (context: ApiEdgeQueryContext): Promise<ApiEdgeQueryResponse> => {
         try {
-            const response = await request({
-                uri: `${this.url}/${context.id}`,
-                qs: {
-                    '.context': JSON.stringify(context.toJSON()),
-                    ...ExpressExternalProvider.identityToQueryString(context.identity)
-                },
-                json: true
-            });
+            const result = await fetch(`${this.url}/${context.id}` + new URLSearchParams({
+                '.context': JSON.stringify(context.toJSON()),
+                ...ExpressExternalProvider.identityToQueryString(context.identity)
+            }));
+            const response = await result.json();
             return new ApiEdgeQueryResponse(response)
         }
         catch({ response }) {
@@ -54,17 +50,13 @@ export class ExpressExternalProvider extends ExternalApiProvider {
 
     listEntries = async (context: ApiEdgeQueryContext): Promise<ApiEdgeQueryResponse> => {
         try {
-            const response = await request({
-                uri: this.url,
-                qs: {
-                    '.context': JSON.stringify(context.toJSON()),
-                    ...ExpressExternalProvider.identityToQueryString(context.identity)
-                },
-                json: true,
-                resolveWithFullResponse: true
-            });
-            const total = response.headers["x-total-count"];
-            return new ApiEdgeQueryResponse(response.body, total ? { pagination: { total }} : undefined);
+            const result = await fetch(this.url + new URLSearchParams({
+                '.context': JSON.stringify(context.toJSON()),
+                ...ExpressExternalProvider.identityToQueryString(context.identity)
+            }));
+            const total = result.headers.get("x-total-count");
+            const response = await result.json();
+            return new ApiEdgeQueryResponse(response, total ? { pagination: { total }} : undefined);
         }
         catch({ response }) {
             throw new ApiEdgeError(response.statusCode, response.statusMessage)
@@ -74,16 +66,14 @@ export class ExpressExternalProvider extends ExternalApiProvider {
     createEntry = async (context: ApiEdgeQueryContext, body: any): Promise<ApiEdgeQueryResponse> => {
         try {
             body.id = body.id || context.id;
-            const response = await request({
-                uri: this.url,
+            const result = await fetch(this.url + new URLSearchParams({
+                '.context': JSON.stringify(context.toJSON()),
+                ...ExpressExternalProvider.identityToQueryString(context.identity)
+            }), {
                 method: 'POST',
-                qs: {
-                    '.context': JSON.stringify(context.toJSON()),
-                    ...ExpressExternalProvider.identityToQueryString(context.identity)
-                },
-                body,
-                json: true
+                body
             });
+            const response = await result.json();
             return new ApiEdgeQueryResponse(response)
         }
         catch({ response }) {
@@ -94,16 +84,14 @@ export class ExpressExternalProvider extends ExternalApiProvider {
     updateEntry = async (context: ApiEdgeQueryContext, body: any): Promise<ApiEdgeQueryResponse> => {
         try {
             body.id = body.id || context.id;
-            const response = await request({
-                uri: this.url,
+            const result = await fetch(this.url + new URLSearchParams({
+                '.context': JSON.stringify(context.toJSON()),
+                ...ExpressExternalProvider.identityToQueryString(context.identity)
+            }), {
                 method: 'PUT',
-                body,
-                json: true,
-                qs: {
-                    '.context': JSON.stringify(context.toJSON()),
-                    ...ExpressExternalProvider.identityToQueryString(context.identity)
-                }
+                body
             });
+            const response = await result.json();
             return new ApiEdgeQueryResponse(response)
         }
         catch({ response }) {
@@ -114,16 +102,14 @@ export class ExpressExternalProvider extends ExternalApiProvider {
     patchEntry = async (context: ApiEdgeQueryContext, body: any): Promise<ApiEdgeQueryResponse> => {
         try {
             body.id = body.id || context.id;
-            const response = await request({
-                uri: this.url,
+            const result = await fetch(this.url + new URLSearchParams({
+                '.context': JSON.stringify(context.toJSON()),
+                ...ExpressExternalProvider.identityToQueryString(context.identity)
+            }), {
                 method: 'PATCH',
-                body,
-                json: true,
-                qs: {
-                    '.context': JSON.stringify(context.toJSON()),
-                    ...ExpressExternalProvider.identityToQueryString(context.identity)
-                }
+                body
             });
+            const response = await result.json();
             return new ApiEdgeQueryResponse(response)
         }
         catch({ response }) {
@@ -134,16 +120,14 @@ export class ExpressExternalProvider extends ExternalApiProvider {
     removeEntry = async (context: ApiEdgeQueryContext, body: any): Promise<ApiEdgeQueryResponse> => {
         try {
             body.id = body.id || context.id;
-            const response = await request({
-                uri: this.url,
+            const result = await fetch(this.url + new URLSearchParams({
+                '.context': JSON.stringify(context.toJSON()),
+                ...ExpressExternalProvider.identityToQueryString(context.identity)
+            }), {
                 method: 'DELETE',
-                body,
-                json: true,
-                qs: {
-                    '.context': JSON.stringify(context.toJSON()),
-                    ...ExpressExternalProvider.identityToQueryString(context.identity)
-                }
+                body
             });
+            const response = await result.json();
             return new ApiEdgeQueryResponse(response)
         }
         catch({ response }) {
@@ -153,20 +137,16 @@ export class ExpressExternalProvider extends ExternalApiProvider {
 
     callMethod = async (scope: ApiQueryScope): Promise<ApiEdgeQueryResponse> => {
         try {
-            const response = await request({
-                uri: `${this.url}/${scope.context.id}/${scope.context.method}`,
+            const result = await fetch(`${this.url}/${scope.context.id}/${scope.context.method}` + new URLSearchParams({
+                '.context': JSON.stringify(scope.context.toJSON()),
+                ...ExpressExternalProvider.identityToQueryString(scope.identity)
+            }),{
                 method: requestTypeToVerb(scope.request.type),
-                body: scope.body,
-                json: !!scope.body,
-                qs: {
-                    '.context': JSON.stringify(scope.context.toJSON()),
-                    ...ExpressExternalProvider.identityToQueryString(scope.identity)
-                },
-                resolveWithFullResponse: true,
-                encoding: null // request binary response body
+                body: scope.body
             });
-            const contentType = response.headers['content-type'];
-            return new ApiEdgeQueryResponse(contentType.lastIndexOf('application/json',0) == 0 ? response.body.toString() : response.body, { contentType })
+            const contentType = result.headers.get('content-type') || '';
+            const response = await result.json() as any;
+            return new ApiEdgeQueryResponse(contentType.lastIndexOf('application/json',0) == 0 ? response.toString() : response, { contentType })
         }
         catch({ response }) {
             throw new ApiEdgeError(response.statusCode, response.statusMessage)
@@ -179,7 +159,8 @@ export class ExpressExternalProvider extends ExternalApiProvider {
 
     async prepare(): Promise<void> {
         if(!this.metadata) {
-            this.metadata = await request({ uri: this.metadataUrl, json: true });
+            const result = await fetch(this.metadataUrl);
+            this.metadata = await result.json()
         }
         this.url = this.metadata.url
     }

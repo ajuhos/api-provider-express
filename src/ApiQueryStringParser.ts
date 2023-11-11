@@ -62,6 +62,9 @@ function processWhereClause(clause: any, context: ApiEdgeQueryContext, edge: Api
             case 'in':
                 context.filter(key, ApiEdgeQueryFilterType.In, value.split(','));
                 break;
+            case 'nin':
+                context.filter(key, ApiEdgeQueryFilterType.NotIn, value.split(','));
+                break;
             default:
                 throw new ApiEdgeError(400, `Invalid Filter Operator: ${operator}`);
         }
